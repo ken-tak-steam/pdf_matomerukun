@@ -12,7 +12,7 @@
 <body>
 <main>
 <h1>PDFまとめる君をダウンロード</h1>
-<p>HTMLファイルのダウンロードが始まります。自動で始まらない場合は、下のボタンを押してください。</p>
+<p>ダウンロードする場合は、下のボタンを押してください。確認画面で「OK」を選ぶと保存を開始します。</p>
 <a id="download" class="button" href="./index.html" download="PDF_matomerukun.html">HTMLをダウンロード（約6MB）</a>
 <p>保存した <strong>PDF_matomerukun.html</strong> をブラウザで開いてご利用ください。</p>
 <small>ダウンロード後はオフラインでも使えます。PDFは端末内で処理します。</small>
@@ -37,8 +37,11 @@ async function save(){
   document.querySelector('main p').textContent='ダウンロードできませんでした。通信状態を確認し、下のボタンでもう一度お試しください。';
  }
 }
-link.addEventListener('click',event=>{event.preventDefault();save();});
-save();
+link.addEventListener('click', event => {
+ event.preventDefault();
+ if (!window.confirm('「PDF_matomerukun.html」をダウンロードしますか？')) return;
+ save();
+});
 </script>
 </body>
 </html>
