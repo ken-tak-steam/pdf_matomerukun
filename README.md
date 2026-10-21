@@ -42,3 +42,9 @@ Copyright (c) 2026 Takakura Kentaro
 ## 開発
 
 `ui.html` と `core.js` が編集用ソース、`index.html` が配布用の単独HTMLです。`build.py` は `CODEX_PRIMARY_RUNTIME_NODE_MODULES` 以下の pdf-lib 1.17.1 と pdfjs-dist 5.6.205 を埋め込みます。配布HTML自体にはPythonもNode.jsも不要です。
+
+## 免責事項
+
+本アプリは無保証で提供します。本アプリの利用によって生じた損害について、法令で認められる範囲で、作者は責任を負いかねます。
+
+元のファイルや保存データは必ず残し、処理結果を確認してからご利用ください。
