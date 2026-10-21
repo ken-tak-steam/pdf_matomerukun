@@ -18,6 +18,27 @@
 <small>ダウンロード後はオフラインでも使えます。PDFは端末内で処理します。</small>
 <p><a href="./">ブラウザでそのまま使う</a></p>
 </main>
-<script>document.getElementById('download').click();</script>
+<script>
+const link=document.getElementById('download');
+let ready;
+async function prepare(){
+ const response=await fetch('./index.html');
+ if(!response.ok) throw new Error('download failed');
+ const html=await response.blob();
+ return URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+}
+async function save(){
+ try {
+  const url=await (ready||(ready=prepare()));
+  const a=document.createElement('a'); a.href=url; a.download='PDF_matomerukun.html';
+  document.body.appendChild(a); a.click(); a.remove();
+ } catch(error) {
+  ready=null;
+  document.querySelector('main p').textContent='ダウンロードできませんでした。通信状態を確認し、下のボタンでもう一度お試しください。';
+ }
+}
+link.addEventListener('click',event=>{event.preventDefault();save();});
+save();
+</script>
 </body>
 </html>
