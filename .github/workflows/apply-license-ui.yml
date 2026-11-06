@@ -1,0 +1,72 @@
+name: Apply common license dialog
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-license-ui.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update license information dialog without changing PDF processing
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- common-license-dialog v1 -->'
+          if marker in s:
+              print('Already applied')
+              raise SystemExit
+          code=r"""<!-- common-license-dialog v1 -->
+<style>
+#common-license-entry{display:flex;justify-content:center;align-items:center;gap:12px;padding:14px 12px;font:12px system-ui,sans-serif;color:#64748b}
+#common-license-entry button{background:transparent;color:#2563eb;border:0;text-decoration:underline;cursor:pointer}
+#common-license-modal{border:0;border-radius:14px;padding:0;width:min(510px,92vw);max-height:85vh;box-shadow:0 16px 48px #0006;font:13px/1.8 system-ui,sans-serif;color:#334155}
+#common-license-modal::backdrop{background:#0f172ab8}
+#common-license-modal header,#common-license-modal footer{padding:12px 18px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center;gap:12px}
+#common-license-modal section{padding:18px 24px;overflow:auto;max-height:60vh}
+#common-license-modal a{color:#2563eb}
+#common-license-modal button{cursor:pointer}
+</style>
+<div id="common-license-entry"><span>Copyright (c) 2026 Takakura Kentaro</span><button type="button" id="common-license-open">ライセンス情報</button></div>
+<dialog id="common-license-modal" aria-labelledby="common-license-title">
+<header><strong id="common-license-title">ライセンス情報</strong><button type="button" data-common-close aria-label="閉じる">✕</button></header>
+<section><strong>Copyright (c) 2026 Takakura Kentaro</strong>
+<p>本ソフトウェアの著作権は著作者に帰属します。以下の条件を満たす場合、利用・複製・改変・再配布を無償で許可します。</p>
+<ol><li><b>著作者表示</b>：再配布・改変版の公開時には、原著作者名、出典URLおよび本ライセンスを明示してください。</li>
+<li><b>非商用利用</b>：本ソフトウェアの販売、商用製品への組み込み、その他営利目的での利用は禁止します。学校教育や有料・無料の講習会・研修会での教材利用は認めます。</li>
+<li><b>改変・再配布</b>：改変した場合はその旨を明示してください。</li>
+<li><b>免責事項</b>：本ソフトウェアは現状有姿・無保証で提供されます。使用によって生じた損害について、著作者は法令で認められる範囲で責任を負いません。</li></ol></section>
+<footer><a href="https://github.com/ken-tak-steam/pdf_matomerukun" target="_blank" rel="noopener noreferrer">GitHub（ソースコード）↗</a><button type="button" data-common-close>閉じる</button></footer>
+</dialog>
+<script>
+(function(){
+  const modal=document.getElementById('common-license-modal');
+  document.getElementById('common-license-open').addEventListener('click',()=>modal.showModal());
+  modal.querySelectorAll('[data-common-close]').forEach(b=>b.addEventListener('click',()=>modal.close()));
+  const own=document.getElementById('common-license-entry');
+  document.querySelectorAll('a,button,summary').forEach(el=>{
+    if(own.contains(el)||modal.contains(el))return;
+    const label=(el.textContent||'').trim();
+    if(/^(ライセンス|免責事項|ライセンス・免責事項|ライセンスと免責事項|ライセンス情報)$/.test(label)){
+      el.style.display='none';
+    }
+  });
+})();
+</script>"""
+          if '</body>' not in s.lower():
+              raise RuntimeError('Could not locate body closing tag')
+          import re
+          s,n=re.subn(r'</body>',lambda m:code+'\n'+m.group(),s,count=1,flags=re.I)
+          assert n==1
+          p.write_text(s,encoding='utf-8')
+      - name: Commit updated HTML
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if ! git diff --cached --quiet; then git commit -m "Unify license dialog with Trimming-kun and link GitHub"; git push; fi
